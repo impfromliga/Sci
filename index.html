@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Raycast Mobile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <style>
+    html, body {
+        text-align: center;
+        font-family: georgia,times,serif;
+        font-size:0.9em;
+        margin: 10;
+        border: 0;
+		overflow:hidden;
+        /* background:; */
+    }
+    #imp, .jsgif{position:absolute;top:50%;left:50%;user-select:none}
+    #speach{
+        font-size: 2em;
+        color: #fff;
+        height: 5.5em;
+        overflow-y: scroll;
+        width:100%;
+        transition:3s all;
+    }
+  </style>
+</head>
+<body id=tapjs onload="voxel.start('map.png', 'flower2.png')"  onkeydown="voxel.eventHandler(event)" onkeyup="voxel.keyTrap(event)" onkeypress="voxel.keyTrap(event)" onmousemove="voxel.mouseHandler(event)" onmousedown="voxel.mouseHandler(event)" onmouseup="voxel.mouseHandler(event)">
+  <h4 style=display:none>fasted by cheats. (original <a href='voxel.onaluf.org'>here</a>)</h4>
+  <div style=position:absolute;top:0px;width:100%;>
+      <p id=speach>
+<br><br><br><br><br>
+No one says, that it would be easy.
+<br>To face the rhythm of the heart, that flash and fade the stars.
+<br><br><br><br><br>
+The reason is not who you love.
+<br>And not to change partners for better ones.
+<br>But in that for their sake, to change for the better yourselve.
+<br><br><br><br><br>
+We must be ready to defend our truth.
+<br>But this mean, that entering into a duel with another truth,
+<br>We risk that this is what will change us for the better.
+<br>Not as we thought
+<br><br><br><br><br>
+And if you're really the one you claim to be,
+<br>You will have to enter this game ...
+<br>Everything happens by itself.
+<br>Everything happens harmoniously.
+<br><br><br><br><br>
+Sometimes, with a person you want to code - This is professional partnership.
+<br>Sometimes you want to talking (sometimes along the way pretty drunk) - This is friendship.
+<br>Sometimes you want to draw together, pee poems - This is creativity.
+<br>But sometimes you want to do everything with a person at once - This is...
+<br>Hack you!
+<br><br><br><br><br>
+<small>this cute nice little demo is dedicated to Si.
+    <br>(she is hiding among you)
+</small>
+<br><br><br><br><br>
+<small>created by ImpFromLiga with native JS only code,
+    <br>24h non stop hacking
+    <br>at HANABI HACK - Moscow 2019
+    <br>Thank U 4 youre attention!
+</small>
+      </p>
+  </div>
+  <audio id=music src="Tikal-ResonantEarth.mp3"></audio>
+  <p><span id="fps" style=display:none></span></p>
+  <canvas id="canvas" width="640px" height="400px"></canvas>
+  <img id="imp" src="imp.gif" rel:animated_src="imp.gif" rel:auto_play="1" draggable=false/>
+  <!-- <img src="imp.gif" draggable=false style="position:absolute;top:50%;left:50%;user-select:none"  width="467" height="375" > -->
+  <div id=start style="position:absolute;cursor:pointer;user-select:none;top:2em;margin-left:40%;padding:.5em 1em;border-radius:5px;width:7em;font-size:2em;display:none;background:green;color:#ccc">START</div>
+  <script type="text/javascript" src="libgif.js"></script>
+  <script>
+        var music= document.querySelector('#music');
+        var dragonAni=60;
+        var speach= document.querySelector('#speach');
+        var position, boost=0, accelerate=0, startTime=Infinity, nextTime=0;
+        var lisajousX,lisajousY,lisajousTm=lisajousX=lisajousY=99;
+        var sup1 = new SuperGif({ gif: imp } );
+        var btnStart= document.querySelector('#start');
+        sup1.load(f=>{
+            btnStart.style.display='inherit';
+            btnStart.onclick= f=>{
+                btnStart.style.display='none';
+                startTime = new Date().getTime();
+                setInterval(function(){
+                    sup1.move_to(dragonAni);
+                },1550)
+                setInterval(function(){
+                    boost+=accelerate;
+                    lisajousTm++;lisajousX+=(Math.abs((lisajousTm&255)-128)-64)/64
+                    lisajousY+=(Math.abs((lisajousTm%192)-96)-48)/48
+                    position.y=4*(boost+lisajousTm)+lisajousY/2;
+                    position.x=4*(boost+lisajousTm)/7+lisajousX;
+                    // g.fillStyle='rgba(255,255,255,.1)';g.fillRect(0,0,300,150)
+                    // g.fillStyle='#000';g.fillRect(lisajousX,y,2,2)
+                },33)
+                renderFrame();
+            };
+        });
+
+
+        var players=[{
+            x:0
+        }];
+        // setTimeout(f=>{
+        // },5000)
+  /*
+ * javascript voxel demo 
+ *
+ * Copyright (c) 2009 Selim Arsever (voxel.onaluf.org)
+ * licensed under the MIT (MIT-LICENSE.txt)
+ */
+ var constants = {
+    highres: true,
+    screen: {
+        height:    384,
+        width:     683,
+        zoom:      2
+    },
+    
+    pov: {
+        verticalOpening:   0.3,
+        depthOfField:     900
+    },
+    
+    color: {
+        fog: [80, 80, 100]
+    },
+    
+    init: function() {
+        constants.pov.horizontalOpening = Math.atan(constants.pov.verticalOpening) * constants.screen.width / constants.screen.height;
+        constants.screen.distance       = constants.screen.width / 2 / Math.tan(constants.pov.horizontalOpening);
+    }
+};
+var renderFrame;
+var voxel = (function() {
+    // local variables:
+    var texture, heightmap, offscreenCanvas, offscreenContext, onscreenCanvas, onscreenContext, frame, frameCounter;
+    
+    //you app's private functions comme here
+    var imageToImageData = function (image){
+        // draw the image to to the canvas
+        var canvas        = document.createElement('canvas');
+        canvas.width      = image.width;
+        canvas.height     = image.height;
+        
+        var context = canvas.getContext("2d");
+        context.drawImage(image, 0, 0);
+        
+        // return the imageData
+        return context.getImageData(0, 0, image.width, image.height);
+    };
+    
+    var imageDataToArrayR = function (imageData) {
+        // create an exportable array instead of the data part
+        // but with only the red component
+        var temp = {
+            width:  imageData.width,
+            height: imageData.height,
+            data:   []
+        };
+        for(var i = 0; i < imageData.data.length / 4; i++) {
+            temp.data[i] = imageData.data[i*4];
+        }
+        return temp;
+    };
+    
+    var imageDataToArray = function (imageData) {
+        // create an exportable array instead of the data part
+        var temp = {
+            width:  imageData.width,
+            height: imageData.height,
+            data:   []
+        };
+        for(var i = 0; i < imageData.data.length; i++) {
+            temp.data[i] = imageData.data[i];
+        }
+        return temp;
+    };
+    
+    position = {
+        x: 450, dx:0,
+        y: 0, dy:0,
+        z: 180,
+        a: Math.PI*.5,
+        antialiasing: false
+    };
+        
+    frameCounter = 0;
+        
+    var loadHeightmap = function(heighmapFilename, textureFilename) {
+            var img    = new Image();
+            img.onload = function() {
+                    // convert the image to an ImageData
+                    var imageData = imageToImageData(img);
+                    // convert the imageData to an array
+                    heightmap = imageDataToArrayR(imageData);
+                    // Load the texture
+                    loadTexture(textureFilename);
+                };
+            img.src = heighmapFilename;
+        };
+        
+    var loadTexture = function(textureFilename) {
+            var img    = new Image();
+            img.onload = function() {
+                    // draw the image to to the canvas
+                    var imageData = imageToImageData(img);
+                    // convert the imageData to an array
+                    texture = imageDataToArray(imageData);
+                    // now we can continue 
+                    imagesLoaded();
+                };
+            img.src = textureFilename;
+        };
+        
+    var imagesLoaded = function() {
+            // initialize constants:
+            constants.init();
+            
+            // create a sort of double buffer (two context):
+            // first a offscreen context
+            offscreenCanvas        = document.createElement('canvas');
+            offscreenCanvas.width  = constants.screen.width;
+            offscreenCanvas.height = constants.screen.height;
+            offscreenContext       = offscreenCanvas.getContext("2d");        
+            
+            // second the onscreen context
+            onscreenCanvas         = document.getElementById("canvas");
+            onscreenCanvas.width   = constants.screen.width  * constants.screen.zoom;
+            onscreenCanvas.height  = constants.screen.height * constants.screen.zoom;
+            onscreenContext        = onscreenCanvas.getContext("2d");
+            
+            // get an ImageData to draw each frame
+            frame = offscreenContext.getImageData(0, 0, constants.screen.width, constants.screen.height);
+            
+            // send all important data to the worker:
+            //startTime = new Date().getTime();
+            // renderFrame();
+        };
+    window.reqAnimFrame=requestAnimationFrame||webkitRequestAnimationFrame||mozRequestAnimationFrame||setTimeout;
+    renderFrame = function() {
+            btnStart.display='false';
+            // This is a small optimisation to skip some projection computation
+            position.z = 192 + .25*heightmap.data[heightmap.width * (Math.abs(Math.ceil(position.y)) % heightmap.height) + Math.abs(Math.ceil(position.x)) % heightmap.width];  
+
+            position.x+=position.dx*=.9;
+            position.y+=position.dy*=.9;
+            // Clean the frame to the sky color
+            //offscreenContext.fillStyle = "rgb("+constants.color.fog[0]+","+constants.color.fog[1]+","+constants.color.fog[2]+")";
+            offscreenContext.clearRect(0, 0, constants.screen.width, constants.screen.height);
+            //offscreenContext.fillRect(0, 0, constants.screen.width, constants.screen.height);
+            frame = offscreenContext.getImageData(0, 0, constants.screen.width, constants.screen.height);
+            var image = frame.data;
+            
+            var doff               = constants.pov.depthOfField / 4;
+            var c1                 = constants.screen.height /2;
+            var c2                 = constants.screen.distance * position.z;
+            offscreenContext.beginPath();
+            for (var i = 0+frameCounter&1; i < constants.screen.width; i+=2){
+                var orientation        = position.a - constants.pov.horizontalOpening*(1-i*2/constants.screen.width);
+                var progression        = {x: Math.cos(orientation), y: Math.sin(orientation)};
+                
+                var distanceProbed     = 0;
+                var screenProjectedTop = 0;
+                var oldHeight          = 0;
+                var oldRenderCache     = false;
+                var summit             = false;
+                
+                while(distanceProbed < constants.pov.depthOfField && screenProjectedTop < constants.screen.height) {
+                    // 1) find the projection of the current point on the screen space
+                    distanceProbed  +=  (distanceProbed < doff)? 2 : (distanceProbed < 2 * doff)? 4 : (distanceProbed < 3 * doff)? 8 : 16;
+                    var probe = { //warp for texture
+                            x: Math.abs(Math.ceil(position.x + distanceProbed * progression.x)),
+                            y: Math.abs(Math.ceil(position.y + distanceProbed * progression.y))
+                        };
+                    var dataIndex        = heightmap.width * (probe.y % heightmap.height) + (probe.x % heightmap.width);
+                    
+                    // This is a small optimisation to skip some projection computation
+                    var height           = heightmap.data[dataIndex];  
+                    if(height < oldHeight){
+                        oldHeight = height;
+                        continue;
+                    }
+                    oldHeight = height;
+                    
+                    var projectedHeight  = Math.min(Math.ceil(c1 - (c2 - constants.screen.distance*height) / distanceProbed), constants.screen.height);
+                    
+                    // 2) if visible we draw it
+                    if (projectedHeight > screenProjectedTop) {
+                        var textureDataIndex = (texture.width * (probe.y % texture.height) + (probe.x % texture.width)) * 4;
+                        var textureCache     = [texture.data[textureDataIndex], texture.data[textureDataIndex + 1], texture.data[textureDataIndex + 2]];
+                        
+                        var fillGoal     = Math.max(constants.screen.height-projectedHeight, 0);
+                        var fogFactor    = Math.min(distanceProbed, constants.pov.depthOfField)/constants.pov.depthOfField;
+                        var invFogFactor = (1 - fogFactor);
+                        
+                        // antialiasing
+						//fogFactor*=255;
+                        var renderCache = {
+                                r: invFogFactor * textureCache[0] + fogFactor* constants.color.fog[0], 
+                                g: invFogFactor * textureCache[1] + fogFactor* constants.color.fog[1], 
+                                b: invFogFactor * textureCache[2] + fogFactor* constants.color.fog[2]
+                            };
+                        if(position.antialiasing && oldRenderCache && summit) {
+                            var previousIndex = (i + constants.screen.width * (constants.screen.height-screenProjectedTop+1))*4;
+                            image[previousIndex]   = Math.ceil(0.5*renderCache.r + 0.5*oldRenderCache.r);
+                            image[previousIndex+1] = Math.ceil(0.5*renderCache.g + 0.5*oldRenderCache.g);
+                            image[previousIndex+2] = Math.ceil(0.5*renderCache.b + 0.5*oldRenderCache.b);
+                        }
+                        oldRenderCache = renderCache;
+                        
+                        // render
+                        for (var j = (constants.screen.height - screenProjectedTop); j > fillGoal; j--) {
+                            image[(i+j*constants.screen.width)*4]   = Math.ceil(renderCache.r);
+                            image[(i+j*constants.screen.width)*4+1] = Math.ceil(renderCache.g);
+                            image[(i+j*constants.screen.width)*4+2] = Math.ceil(renderCache.b);
+                            image[(i+j*constants.screen.width)*4+3] = 255;
+                        }
+                        screenProjectedTop = projectedHeight;
+                        summit = false;
+                    } else if (screenProjectedTop > projectedHeight){
+                        summit = true;
+                    }
+                }
+                // 3) if the top is lower than the top of the screen we fill it
+                var j = (constants.screen.height - screenProjectedTop + 1 );
+				offscreenContext.lineTo(i,j);
+                if(position.antialiasing){
+                    if((constants.screen.height - screenProjectedTop + 1) >= 0) {
+						j = (i + j * constants.screen.width)*4;
+                        
+                        image[j]   = Math.ceil(0.5*image[j]   + 0.5*constants.color.fog[0]);
+                        image[j+1] = Math.ceil(0.5*image[j+1] + 0.5*constants.color.fog[1]);
+                        image[j+2] = Math.ceil(0.5*image[j+2] + 0.5*constants.color.fog[2]);
+                    }
+                }
+            }
+            frame.data = image;
+            offscreenContext.putImageData(frame, 0, 0);
+			
+			offscreenContext.lineTo(i,0);
+			offscreenContext.lineTo(0,0);
+			offscreenContext.closePath();
+            document.body.style.background= offscreenContext.fillStyle= 'rgb('+constants.color.fog+')';
+			offscreenContext.fill();
+			
+            onscreenContext.drawImage(offscreenCanvas, 0, 0, constants.screen.zoom*constants.screen.width, constants.screen.zoom*constants.screen.height);
+            
+            // mesure framerate
+            frameCounter++;
+            
+            // document.getElementById("fps").innerHTML = (Math.floor(frameCounter/(new Date().getTime()-startTime)*10000)/10)+"fps";
+            // if(frameCounter > 30) {
+            //     frameCounter = 0;
+            //     startTime = new Date().getTime();
+            // }
+            var t = (new Date()).getTime() - startTime;
+            //console.log({t,nextTime})
+            if(t>225e3){//225s releaseTimeline
+            }else if(t>220e3){//220s credits
+                //[150,330,540,760,1000,1025,1290,1490];
+                speach.scrollTo(0,1490);
+                speach.style.color= '#fff';
+                
+                nextTime=Infinity;
+            }else if(t>210e3){//215s this cute nice little demo is dedicated to Si.
+                speach.scrollTo(0,1290);
+                speach.style.color= '#fff';
+                
+            }else if(t>185e3){//185s
+                constants.color.fog=[255,240,120];
+                dragonAni=48;
+                accelerate=10;
+            }else if(t>180e3){//180s Hack you!
+                var k1= (t-180e3)/5e3;
+                var k2= 1-k1;
+                constants.color.fog=[255*k1 + 80*k2, 240*k1 + 80*k2, 120*k1 + 100*k2];
+                speach.scrollTo(0,1025);
+                speach.style.color= '#fff';
+                
+            }else if(t>160e3){//160s stage5
+                speach.scrollTo(0,1000);
+                speach.style.color= '#fff';
+                
+            }else if(t>155e3){//155s fade out
+                speach.style.color= 'rgb('+constants.color.fog+')';
+                
+            }else if(t>130e3){//130s stage4
+                speach.scrollTo(0,760);
+                speach.style.color= '#fff';
+                
+            }else if(t>125e3){//125s fade out
+                speach.style.color= 'rgb('+constants.color.fog+')';
+                
+            }else if(t>85e3){//85s stage3
+                speach.scrollTo(0,540);
+                speach.style.color= '#fff';
+                
+            }else if(t>80e3){//80s fade out
+                speach.style.color= 'rgb('+constants.color.fog+')';
+            }else if(t>55e3){//55s stage2
+                speach.scrollTo(0,330);
+                speach.style.color= '#fff';
+            }else if(t>45e3){//55s stage2
+                speach.style.color= 'rgb('+constants.color.fog+')';
+            }else if(t>15e3){//15s stage1
+                speach.scrollTo(0,150);
+                speach.style.color= '#fff';
+            }else if(t>10e3){//10s music on
+                music.play();
+            }else if(t>10){//init
+                speach.style.color= 'rgb('+constants.color.fog+')';
+            }
+        
+            
+            //for(var n=10;n--;)
+                drawStar({x: onscreenCanvas.width/2 + Math.random()*t/7e3|0, y: onscreenCanvas.height/4 + Math.random()*t/7e3|0, size: onscreenCanvas.height})
+            function drawStar(point){
+                gradient = onscreenContext.createRadialGradient(point.x, point.y, 1, point.x, point.y, point.size); 
+                gradient.addColorStop(0, 'rgb(255, 255, 255)');
+                gradient.addColorStop(.03, 'rgb(128, 128, 128)');
+                gradient.addColorStop(.04, 'rgb(96, 96, 96)');
+                gradient.addColorStop(.05, 'rgb(64, 64, 64)');
+                gradient.addColorStop(.06, 'rgb(48, 48, 48)');
+                gradient.addColorStop(.08, 'rgb(32, 32, 32)');
+                gradient.addColorStop(.095, 'rgb(24, 24, 24)');
+                gradient.addColorStop(.14, 'rgb(16, 16, 16)');
+                gradient.addColorStop(.30, 'rgb(12, 12, 12)');
+                gradient.addColorStop(.5, 'rgb(8, 8, 8)');
+                gradient.addColorStop(.75, 'rgb(4, 4, 4)');
+                gradient.addColorStop(1, 'rgb(1, 1, 1)');
+                onscreenContext.beginPath();
+                onscreenContext.fillStyle = gradient;
+                onscreenContext.arc(point.x, point.y, point.size, 0, Math.PI * 2, true);
+                onscreenContext.globalCompositeOperation = "screen";
+                onscreenContext.fill();
+                onscreenContext.globalCompositeOperation = 'source-over';
+                onscreenContext.closePath();
+            }
+
+            reqAnimFrame(renderFrame, 1);
+        };
+    
+    var pressed = false;
+    var oldClientX = false;
+    return {
+        //you app's visible functions comme here
+        eventHandler: function(e) {
+            var increment = 10;
+            switch(e.keyCode) {
+                case 37: //left
+                    position.a -= 0.03;
+                    break;
+                case 38: //up 
+                    position.dx += Math.cos(position.a)*increment;
+                    position.dy += Math.sin(position.a)*increment;
+                    break;
+                case 39: //right
+                    position.a += 0.03;
+                    break;
+                case 40: //down
+                    position.dx -= Math.cos(position.a)*increment;
+                    position.dy -= Math.sin(position.a)*increment;
+                    break;
+                case 87: // w = UP
+                    position.z += 10;
+                    break;
+                case 83: // s = DOWN
+                    position.z -= 10;
+                    break;
+                case 65: // a : antialiasing
+                    position.antialiasing = !position.antialiasing;
+                    break;
+                case 81: //q : swich resolution
+                    constants.highres = !constants.highres;
+                    if(constants.highres){
+                        constants.screen.height = 400;
+                        constants.screen.width  = 900;
+                        constants.screen.zoom   = 1;
+                    } else {
+                        constants.screen.height = 300;
+                        constants.screen.width  = 640;
+                        constants.screen.zoom   = 2;
+                    }
+                    // initialize constants:
+                    constants.init();
+                    
+                    // create a sort of double buffer (two context):
+                    // first a offscreen context
+                    offscreenCanvas        = document.createElement('canvas');
+                    offscreenCanvas.width  = constants.screen.width;
+                    offscreenCanvas.height = constants.screen.height;
+                    offscreenContext       = offscreenCanvas.getContext("2d");        
+                    
+                    // second the onscreen context
+                    onscreenCanvas         = document.getElementById("canvas");
+                    onscreenCanvas.width   = constants.screen.width  * constants.screen.zoom;
+                    onscreenCanvas.height  = constants.screen.height * constants.screen.zoom;
+                    onscreenContext        = onscreenCanvas.getContext("2d");
+                    
+                    // get an ImageData to draw each frame
+                    frame = offscreenContext.getImageData(0, 0, constants.screen.width, constants.screen.height);
+            }
+            voxel.keyTrap(e);
+            return false; 
+        },
+        mouseHandler: function(event) {
+            if(event.type === "mousedown"){
+                if(event.button === 0) {
+                    pressed = true;
+                }
+            } else if (event.type === "mouseup") {
+                if(event.button === 0) {
+                    pressed = false;
+                }
+            } else if (event.type === "mousemove") {
+                if(pressed) {
+                    var xdiff = event.clientX - oldClientX;
+                    position.a += 0.01*xdiff;
+                    
+                    var ydiff = event.clientY - oldClientY;
+                    position.dx -= Math.cos(position.a)*2*ydiff;
+                    position.dy -= Math.sin(position.a)*2*ydiff;
+                }
+            }
+            oldClientX = event.clientX;
+            oldClientY = event.clientY;
+        },
+        keyTrap: function (event) {
+            event = event || window.event;
+            switch (event.keyCode) {
+                case 37:
+                case 38:
+                case 39:
+                case 40:
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    } else {
+                        event.returnValue = false;
+                    }
+                    break;
+            }
+        },
+        start: function(heighmapFilename, textureFilename) {
+            loadHeightmap(heighmapFilename, textureFilename);
+        }
+    };
+    
+})();
+  </script>
+</body>
+</html>
